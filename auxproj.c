@@ -268,8 +268,8 @@ void remover_reserva(Reserva cabeca, long telemovel_cliente) { //REMOVE CLIENTE 
 //FUNÇÕES PARA VERIFICAR SE HÁ HORAS DISPONIVIES (A SEGUNDA AINDA ESTÁ MEIO INSTÁVEL)
 ///////////////////////////////////////////////////////////////////////////////////// 
 
-bool existe_hora_preenchida(Reserva cabeça, Reserva temporario){ 
-    Reserva atual=cabeça;
+bool existe_hora_preenchida(Reserva cabeca, Reserva temporario){ 
+    Reserva atual=cabeca;
     Reserva temp=temporario;
 
     if (atual != NULL) {
@@ -284,7 +284,7 @@ bool existe_hora_preenchida(Reserva cabeça, Reserva temporario){
     }
 
     while(atual->prox!=NULL){
-        if(atual!=cabeça && (atual->Cliente.telemovel!=temp->Cliente.telemovel)){
+        if(atual!=cabeca && (atual->Cliente.telemovel!=temp->Cliente.telemovel)){
             if((atual->Data.ano==temp->Data.ano) && (atual->Data.mes==temp->Data.mes) && (atual->Data.dia==temp->Data.dia)){
                 if(atual->horas_inicio.horas==temp->horas_inicio.horas && atual->horas_inicio.minutos==temp->horas_inicio.minutos){ //|| (atual->horas_inicio.horas==temp->horas_inicio.horas && atual->horas_fim.horas>temp->horas_inicio.horas)){ //SE HORAS INICIAS SÃO IGUAIS
                     return true;
@@ -329,14 +329,14 @@ bool existe_hora_preenchida_teste(Reserva cabeca, Reserva temporario) {
 }
 
 
-bool verifica_horas_teste(Reserva cabeça, Reserva reserva) {
-    Reserva atual=cabeça;
+bool verifica_horas_teste(Reserva cabeca, Reserva reserva) {
+    Reserva atual=cabeca;
     Reserva temp=reserva;
 
     int reserva_horas = reserva->horas_inicio.horas;
     int reserva_minutos = reserva->horas_inicio.minutos;
 
-    if(existe_hora_preenchida(cabeça,reserva)) return true;
+    if(existe_hora_preenchida(cabeca,reserva)) return true;
 
     while(atual != NULL) {
         int atual_horas = atual->horas_fim.horas;
