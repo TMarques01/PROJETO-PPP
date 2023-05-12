@@ -16,21 +16,21 @@ int lista_vazia(Reserva lista) {
     else return 0;
 }
 
-void imprimir_reservas(Reserva lista) { //IMPRIME A LISTA
+void imprimir_reservas(Reserva lista) { //IMPRIME A LISTA DAS RESERVAS;
     if (lista_vazia(lista)) {
         printf("A lista está vazia.\n");
         return;
     }
     printf("\n");
     printf("Reservas:\n");
-    Reserva atual = lista->prox;
+    Reserva atual = lista->prox; //salta o header
     while (atual != NULL) {
         printf("Cliente: %s\n", atual->Cliente.nome);
         printf("Telemóvel: %ld\n", atual->Cliente.telemovel);
         if(atual->tipo_reserva==1){
-            printf("Tipo de reserva: LAVAGEM\n");
+            printf("Tipo de reserva: Lavagem\n");
         } else if(atual->tipo_reserva==0) {
-            printf("Tipo de reserva: MANUTENÇÃO\n");
+            printf("Tipo de reserva: Manutenção\n");
         }
         printf("Data: %02d/%02d/%04d\n", atual->Data.dia, atual->Data.mes, atual->Data.ano);
         printf("Horário de início: %02d:%02d\n", atual->horas_inicio.horas, atual->horas_inicio.minutos);
@@ -39,6 +39,34 @@ void imprimir_reservas(Reserva lista) { //IMPRIME A LISTA
         atual = atual->prox;
     }
 }
+
+void imprimir__pre_reservas(Pre_reserva lista) { //IMPRIME A LISTA DAS RESERVAS;
+    if (lista->prox==NULL) {
+        printf("A lista está vazia.\n");
+        return;
+    }
+    printf("\n");
+    printf("Pré-reservas:\n");
+    Pre_reserva atual = lista->prox; //salta o header
+    while (atual != NULL) {
+        printf("Cliente: %s\n", atual->pre_reservaa.Cliente.nome);
+        printf("Telemóvel: %ld\n", atual->pre_reservaa.Cliente.telemovel);
+        if(atual->pre_reservaa.tipo_reserva==1){
+            printf("Tipo de reserva: Lavagem\n");
+        } else if(atual->pre_reservaa.tipo_reserva==0) {
+            printf("Tipo de reserva: Manutenção\n");
+        }
+        printf("Data: %02d/%02d/%04d\n", atual->pre_reservaa.Data.dia, atual->pre_reservaa.Data.mes, atual->pre_reservaa.Data.ano);
+        printf("Horário de início: %02d:%02d\n", atual->pre_reservaa.horas_inicio.horas, atual->pre_reservaa.horas_inicio.minutos);
+        printf("Horário de fim: %02d:%02d\n", atual->pre_reservaa.horas_fim.horas, atual->pre_reservaa.horas_fim.minutos);
+        printf("\n");
+        atual = atual->prox;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////// 
+//CRIAR AS LISTAS (reserva e pre_reserva)
+//////////////////////////////////////////////////////////////////////////////////// 
 
 Reserva criar_lista_reserva() {
     Reserva p = (Reserva) malloc(sizeof(reserva));
@@ -63,6 +91,27 @@ Reserva criar_lista_reserva() {
         return NULL;
     }
     header=p;
+    return header;
+}
+
+Pre_reserva criar_lista_pre_reserva() {
+    Pre_reserva p = (Pre_reserva) malloc(sizeof(pre_reserva));
+    if(p==NULL){
+        perror("ERRO AO ALOCAR MEMÓRIA");
+    }
+    strcpy(p->pre_reservaa.Cliente.nome,"");
+    p->pre_reservaa.Cliente.telemovel=0;    
+    p->pre_reservaa.Data.mes=0;
+    p->pre_reservaa.Data.ano=0;
+    p->pre_reservaa.Data.dia=0;
+    p->pre_reservaa.tipo_reserva=-1;
+    p->pre_reservaa.horas_inicio.horas=0;
+    p->pre_reservaa.horas_inicio.minutos=0;
+    p->pre_reservaa.horas_fim.minutos=0;
+    p->pre_reservaa.horas_fim.horas=0;
+    p->pre_reservaa.prox=NULL;
+
+    Pre_reserva header=p;
     return header;
 }
 
@@ -100,12 +149,47 @@ int comparar_reservas(Reserva r1, Reserva r2) { //RETURN 1 SE A PRIMEIRA DATA FO
     }
 }
 
+int comparar_pre_reservas(Pre_reserva r1, Reserva r2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
+    if (r1->pre_reservaa.Data.ano < r2->Data.ano) {
+        return -1;
+    } else if (r1->pre_reservaa.Data.ano > r2->Data.ano) {
+        return 1;
+    } else {
+        if (r1->pre_reservaa.Data.mes < r2->Data.mes) {
+            return -1;
+        } else if (r1->pre_reservaa.Data.mes > r2->Data.mes) {
+            return 1;
+        } else {
+            if (r1->pre_reservaa.Data.dia < r2->Data.dia) {
+                return -1;
+            } else if (r1->pre_reservaa.Data.dia > r2->Data.dia) {
+                return 1;
+            } else {
+                if (r1->pre_reservaa.horas_inicio.horas < r2->horas_inicio.horas) {
+                    return -1;
+                } else if (r1->pre_reservaa.horas_inicio.horas > r2->horas_inicio.horas) {
+                    return 1;
+                } else {
+                    if (r1->pre_reservaa.horas_inicio.minutos < r2->horas_inicio.minutos) {
+                        return -1;
+                    } else if (r1->pre_reservaa.horas_inicio.minutos > r2->horas_inicio.minutos) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////// 
 //FUNÇÕES PARA A HORA_FIM (VERIFICAR SE ENCONTRA DENTRO DO HORARIO DE TRABALHO)
 //////////////////////////////////////////////////////////////////////////////////// 
 
 bool verificar_horario_fora_do_trabalho(struct horas *horas_fim, struct horas *horas_inicio){ //VERIFICA SE OS HORARIOS CORRESPONDENTES SE ENCONTRAM DENTRO DO HORARIO DE TRABALHO
-    if((horas_fim->horas>18) || (horas_fim->horas==18 && horas_fim->minutos>0) || (horas_inicio->horas<8)){
+    if((horas_fim->horas>18) || (horas_fim->horas==18 && horas_fim->minutos>0) || (horas_inicio->horas<8)){ //08h00 - 18h00
         return true;
     }
     return false;
@@ -212,7 +296,7 @@ struct reserva *criar_reserva(){ //CRIA A RESERVA
 //AINDA NÃO SEI SE ESTA A ADICIONAR TUDO DIREITINHO E SE A FUNÇÃO QUE VERIFICA SE A HORA ESTA DISPONIVEL ESTA A FUNCIONAR NESTE CASO
 //////////////////////////////////////////////////////////////////////////////////// 
 
-void adicionar_reserva_vazia_a_lista(Reserva cabeca, Reserva nova){ //ADICIONAR À LISTA, A RESERVA
+void adicionar_reserva_vazia_a_lista(Reserva cabeca, Reserva nova){ //ADICIONAR À LISTA, A RESERVA (não estou a usar)
     Reserva atual=cabeca;
     Reserva nova_reserva=nova;
 
@@ -268,31 +352,33 @@ void remover_reserva(Reserva cabeca, long telemovel_cliente) { //REMOVE CLIENTE 
 //FUNÇÕES PARA VERIFICAR SE HÁ HORAS DISPONIVIES (A SEGUNDA AINDA ESTÁ MEIO INSTÁVEL)
 ///////////////////////////////////////////////////////////////////////////////////// 
 
-bool existe_hora_preenchida(Reserva cabeca, Reserva temporario){ 
-    Reserva atual=cabeca;
-    Reserva temp=temporario;
+bool horario_disponivel(Reserva cabeca, Reserva temporario, Reserva anterior){
+    Reserva atual = cabeca;
+    Reserva temp = temporario;
+    Reserva ant = anterior;
 
-    if (atual != NULL) {
-        // Verifica se o primeiro elemento é igual ao temporario
-        if (atual->Cliente.telemovel != temp->Cliente.telemovel) {
-            if ((atual->Data.ano == temp->Data.ano) && (atual->Data.mes == temp->Data.mes) && (atual->Data.dia == temp->Data.dia)) {
-                if ((atual->horas_inicio.horas == temp->horas_inicio.horas) && (atual->horas_inicio.minutos == temp->horas_inicio.minutos)) {
-                    return true;
-                }
-            }
+    if ((atual->Data.ano == temp->Data.ano) && (atual->Data.mes == temp->Data.mes) && (atual->Data.dia == temp->Data.dia)) {   //VERIFICA SE O HORARIO DO INCIO É IGUAL
+        if ((atual->horas_inicio.horas == temp->horas_inicio.horas) && (atual->horas_inicio.minutos == temp->horas_inicio.minutos)) {
+            return true;
         }
-    }
-
-    while(atual->prox!=NULL){
-        if(atual!=cabeca && (atual->Cliente.telemovel!=temp->Cliente.telemovel)){
-            if((atual->Data.ano==temp->Data.ano) && (atual->Data.mes==temp->Data.mes) && (atual->Data.dia==temp->Data.dia)){
-                if(atual->horas_inicio.horas==temp->horas_inicio.horas && atual->horas_inicio.minutos==temp->horas_inicio.minutos){ //|| (atual->horas_inicio.horas==temp->horas_inicio.horas && atual->horas_fim.horas>temp->horas_inicio.horas)){ //SE HORAS INICIAS SÃO IGUAIS
-                    return true;
-                }
-            }
         
+        if(atual->tipo_reserva==0){
+            if((atual->horas_inicio.horas==temp->horas_inicio.horas && atual->horas_fim.horas>temp->horas_inicio.horas)){ 
+                return true; //EXEMPLO 16h00 - 17h00 e quer uma reserva às 16h30 (não pode)
+            } else if((atual->horas_inicio.horas<temp->horas_inicio.horas) && (atual->horas_fim.horas==temp->horas_inicio.horas) && (atual->horas_fim.minutos>temp->horas_inicio.minutos)){
+                return true; //EXEMPLO 16h30 - 17h30 e quer uma reserva às 17h00 (não pode)
+            }
         }
-        atual=atual->prox;
+
+        if(temp->tipo_reserva==0){
+            printf("ENTROU\n");
+            printf("%s\n",ant->Cliente.nome);
+            if(ant->horas_fim.horas==temp->horas_inicio.horas && ant->horas_fim.minutos==temp->horas_inicio.minutos) {
+                printf("ENTROU NO IF \n");
+                if((atual->horas_inicio.horas==temp->horas_fim.horas) && (atual->horas_inicio.minutos<temp->horas_fim.minutos)) return true;
+                if((atual->horas_inicio.horas<temp->horas_fim.horas)&&(atual->horas_inicio.minutos>temp->horas_fim.minutos)) return true;
+            }
+        }
     }
     return false;
 }
@@ -300,43 +386,35 @@ bool existe_hora_preenchida(Reserva cabeca, Reserva temporario){
 bool existe_hora_preenchida_teste(Reserva cabeca, Reserva temporario) {
     Reserva atual = cabeca;
     Reserva temp = temporario;
+    Reserva ant = NULL; 
 
     // Verifica se a lista não está vazia
     if (atual != NULL) {
         // Verifica se o primeiro elemento é igual ao temporario
         if (atual->Cliente.telemovel != temp->Cliente.telemovel) {
-            if ((atual->Data.ano == temp->Data.ano) && (atual->Data.mes == temp->Data.mes) && (atual->Data.dia == temp->Data.dia)) {
-                if ((atual->horas_inicio.horas == temp->horas_inicio.horas) && (atual->horas_inicio.minutos == temp->horas_inicio.minutos)) {
-                    return true;
-                }
-            }
+            if (horario_disponivel(atual,temp,ant)) return true;
         }
 
         // Percorre a lista a partir do segundo elemento
         while (atual->prox != NULL) {
+            ant=atual;
             atual = atual->prox;
             if (atual->Cliente.telemovel != temp->Cliente.telemovel) {
-                if ((atual->Data.ano == temp->Data.ano) && (atual->Data.mes == temp->Data.mes) && (atual->Data.dia == temp->Data.dia)) {
-                    if ((atual->horas_inicio.horas == temp->horas_inicio.horas) && (atual->horas_inicio.minutos == temp->horas_inicio.minutos)) {
-                        return true;
-                    }
-                }
+                if (horario_disponivel(atual,temp,ant)) return true;
             }
         }
     }
-
     return false;
 }
 
-
-bool verifica_horas_teste(Reserva cabeca, Reserva reserva) {
+bool verifica_horas_teste(Reserva cabeca, Reserva reserva) { //NÃO ESTOU A USAR
     Reserva atual=cabeca;
     Reserva temp=reserva;
 
     int reserva_horas = reserva->horas_inicio.horas;
     int reserva_minutos = reserva->horas_inicio.minutos;
 
-    if(existe_hora_preenchida(cabeca,reserva)) return true;
+    //if(existe_hora_preenchida(cabeca,reserva)) return true;
 
     while(atual != NULL) {
         int atual_horas = atual->horas_fim.horas;
@@ -360,11 +438,31 @@ bool verifica_horas_teste(Reserva cabeca, Reserva reserva) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////// 
+//ADICIONAR À PRE_RESERVA
+///////////////////////////////////////////////////////////////////////////////////// 
+
+void adicionar_pre_reserva_a_lista(Pre_reserva cabeca_pre_reserva, Pre_reserva nova) { //ADICIONA UM NÓ À LISTA DAS PRE RESERVAS (não está a funcionar)
+    Pre_reserva anterior = cabeca_pre_reserva;
+    Pre_reserva atual = anterior->prox;
+
+    // Percorre a lista enquanto a data e hora da reserva atual forem menores que a da nova reserva
+    while (atual != NULL && (comparar_pre_reservas(atual,nova)==-1)){
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    // Insere o novo nó na lista na posição encontrada
+    nova->prox = atual;
+    anterior->prox = nova;
+}
+
+///////////////////////////////////////////////////////////////////////////////////// 
 //MAIN
 ///////////////////////////////////////////////////////////////////////////////////// 
 
 int main(){
-    Reserva p=criar_lista_reserva();
+    Reserva r=criar_lista_reserva();
+    Pre_reserva p=criar_lista_pre_reserva();
 
 /*
     Reserva d=criar_reserva();
@@ -380,16 +478,17 @@ int main(){
     //TESTAR COM DUAS RESERVAS
     for(int i=0;i<3;i++){
         Reserva c=criar_reserva();
-        adicionar_reserva_a_lista_teste(p,c);
-        if(existe_hora_preenchida_teste(p,c)){                               //O PRIMEIRO ELEMENTO DA LISTA NÃO ESTÁ A 
-            printf("Não foi possivel adicionar a reserva\n");                //SER COMPARADO COM OS OUTROS
-            remover_reserva(p,c->Cliente.telemovel);
+        adicionar_reserva_a_lista_teste(r,c);
+        if(existe_hora_preenchida_teste(r,c)){                               
+            printf("Não foi possivel adicionar a reserva\n"); 
+            //adicionar_pre_reserva_a_lista(p,c); //ADICIONA À PRE_RESERVA                
+            remover_reserva(r,c->Cliente.telemovel); //ELIMINA DA LISTA DAS RESERVAS
         } else {
             printf("Reserva adicionada com sucesso.\n");
         }   
     }
-    //ordenar_por_data_hora(&p);
-    imprimir_reservas(p);
+    imprimir_reservas(r);
+    //imprimir__pre_reservas(p);
     return 0;
 }
 
