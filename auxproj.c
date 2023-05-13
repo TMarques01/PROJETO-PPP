@@ -227,9 +227,27 @@ struct horas *definir_hora_fim(int tipo_reserva, struct horas horas_inicio){ //F
 
     if(verificar_horario_fora_do_trabalho(hora_fim,&horas_inicio)){ //VERIFICA SE A HORA DO FIM NÃO SAI DO HORARIO DE TRABALHO 08h00 - 18h00
         printf("Não é possivel adicionar hora.\n");
+        printf("\n");
         exit(1);
     }
     return hora_fim;
+}
+
+bool verificar_n_telemovel_igual(Reserva cabeca, Reserva telemovel){ //VERIFICA SE O CLIENTE JÁ EXISTE NAS RESERVAS
+    Reserva atual=cabeca;
+    Reserva tele=telemovel;
+    while(atual!=NULL){
+        if(atual!=tele){
+            if((atual->Cliente.telemovel==tele->Cliente.telemovel) && (strcmp(atual->Cliente.nome,tele->Cliente.nome)!=0))//VERIFICA SE O TELEMOVEL É IGUAL 
+            {                                                                                                             //E O NOME É DIFERENTE
+                printf("Número de telemóvel já existente.\n");
+                printf("\n");
+                return true;
+            } 
+        }
+        atual=atual->prox;
+    }
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////// 
@@ -319,7 +337,7 @@ void adicionar_reserva_vazia_a_lista(Reserva cabeca, Reserva nova){ //ADICIONAR 
     atual->prox=nova_reserva;
 }
 
-void adicionar_reserva_a_lista_teste(Reserva cabeca, Reserva nova) {
+void adicionar_reserva_a_lista_teste(Reserva cabeca, Reserva nova) { //ADICIONA À RESERVA
     Reserva anterior = cabeca;
     Reserva atual = anterior->prox;
 
@@ -334,15 +352,13 @@ void adicionar_reserva_a_lista_teste(Reserva cabeca, Reserva nova) {
     anterior->prox = nova;
 }
 
-
-void remover_reserva(Reserva cabeca, long telemovel_cliente) { //REMOVE CLIENTE DA LISTA DANDO O N DE TELEMOVEL DO MESMO
-    Reserva atual = cabeca->prox; // começa no primeiro nó (após o nó cabeça)
+void remover_reserva(Reserva cabeca, Reserva telemovel_cliente) { //REMOVE CLIENTE DA LISTA DANDO O Nº DE TELEMOVEL DO MESMO
+    Reserva atual = cabeca->prox; // salta o header
     Reserva anterior = cabeca;
-
 
     // Percorre a lista até encontrar o nó a ser eliminado
     while (atual != NULL) {
-        if (atual->Cliente.telemovel == telemovel_cliente) {
+        if (atual == telemovel_cliente) {
             break;
         }
         anterior = atual;
@@ -451,7 +467,7 @@ bool verifica_horas_teste(Reserva cabeca, Reserva reserva) { //NÃO ESTOU A USAR
 //ADICIONAR À PRE_RESERVA
 /////////////////////////////////////////////////////////////////////////////////////
 
-void converter_reserva_para_pre_reserva(Reserva reserva, Pre_reserva pre_reserva) {
+void converter_reserva_para_pre_reserva(Reserva reserva, Pre_reserva pre_reserva) {//CONVERTE A INFORMAÇÃO DO TIPO "Reserva" PARA DO TIPO "Pre_reserva" (não estou a usar)
     pre_reserva->pre_reservaa = *reserva;
 }
 
@@ -470,7 +486,7 @@ void adicionar_pre_reserva_a_lista(Pre_reserva cabeca_pre_reserva, Pre_reserva n
     anterior->prox = nova;
 }
 
-void adicionar_pre_reserva_a_lista_teste(Pre_reserva cabeca_pre_reserva, Reserva nova) {
+void adicionar_pre_reserva_a_lista_teste(Pre_reserva cabeca_pre_reserva, Reserva nova) { //ADICIONA UM NÓ À LISTA DAS PRE RESERVAS
     Pre_reserva anterior = cabeca_pre_reserva;
     Pre_reserva atual = anterior->prox;
 
@@ -494,6 +510,11 @@ void adicionar_pre_reserva_a_lista_teste(Pre_reserva cabeca_pre_reserva, Reserva
     anterior->prox = novo_no;
 }
 
+///////////////////////////////////////////////////////////////////////////////////// 
+//VERIFICAR SE EXISTE
+/////////////////////////////////////////////////////////////////////////////////////
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////// 
 //MAIN
@@ -507,18 +528,20 @@ int main(){
     for(int i=0;i<3;i++){
         Reserva temp=criar_reserva();
         adicionar_reserva_a_lista_teste(r,temp);
-        if(existe_hora_preenchida_teste(r,temp)){                               
+        if (verificar_n_telemovel_igual(r,temp)) { //VERIFICAR SE JÁ EXISTE O CLIENTE NA RESERVA
+            remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
+        } else if (existe_hora_preenchida_teste(r,temp)) { //VERIFICAR SE A HORA JÁ ESTÁ PREENCHIDA                        
             printf("Não foi possivel adicionar a reserva.\n"); 
             adicionar_pre_reserva_a_lista_teste(p,temp); //ADICIONA À PRE_RESERVA                
-            remover_reserva(r,temp->Cliente.telemovel); //ELIMINA DA LISTA DAS RESERVAS
+            remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
         } else {
             printf("Reserva adicionada com sucesso.\n");
+            printf("\n");
         }   
     }
     imprimir_reservas(r);
     imprimir__pre_reservas(p);
     free(r);
+    free(p);
     return 0;
 }
-
-//DENTRO DA VERIFICAÇÃO AINDA TEM ALGUMAS CENAS, FAZER A FUNÇAO PROCURA PARA VER ELEMENTOS
