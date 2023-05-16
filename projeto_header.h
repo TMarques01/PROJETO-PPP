@@ -46,4 +46,13 @@ typedef struct pre_reserva
 
 typedef pre_reserva *Pre_reserva;
 
+typedef struct l_cliente
+{
+    struct reserva ord_cliente;
+    char lista[50];
+    struct l_cliente *prox;
+}l_cliente;
+
+typedef l_cliente *L_cliente;
+
 #endif
