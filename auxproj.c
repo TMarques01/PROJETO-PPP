@@ -162,98 +162,30 @@ L_cliente criar_lista_l_cliente() { //CRIA LISTA DO CLIENTE (lista feita para im
 //FUNÇÕES PARA COMPARAR DATA
 ////////////////////////////////////////////////////////////////////////////////////
 
-int comparar_reservas_cliente(L_cliente r1, L_cliente r2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
-    if (r1->ord_cliente.Data.ano < r2->ord_cliente.Data.ano) {
+int comparar_reservas_cliente(struct data d1,struct data d2, struct horas h1, struct horas h2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
+    if (d1.ano < d2.ano){                                      //estas são as horas iniicio
         return -1;
-    } else if (r1->ord_cliente.Data.ano > r2->ord_cliente.Data.ano) {
+    } else if (d1.ano > d2.ano) {
         return 1;
     } else {
-        if (r1->ord_cliente.Data.mes < r2->ord_cliente.Data.mes) {
+        if (d1.mes < d2.mes) {
             return -1;
-        } else if (r1->ord_cliente.Data.mes > r2->ord_cliente.Data.mes) {
+        } else if (d1.mes > d2.mes) {
             return 1;
         } else {
-            if (r1->ord_cliente.Data.dia < r2->ord_cliente.Data.dia) {
+            if (d1.dia < d2.dia) {
                 return -1;
-            } else if (r1->ord_cliente.Data.dia > r2->ord_cliente.Data.dia) {
+            } else if (d1.dia > d2.dia) {
                 return 1;
             } else {
-                if (r1->ord_cliente.horas_inicio.horas < r2->ord_cliente.horas_inicio.horas) {
+                if (h1.horas < h2.horas) {
                     return -1;
-                } else if (r1->ord_cliente.horas_inicio.horas > r2->ord_cliente.horas_inicio.horas) {
+                } else if (h1.horas > h2.horas) {
                     return 1;
                 } else {
-                    if (r1->ord_cliente.horas_inicio.minutos < r2->ord_cliente.horas_inicio.minutos) {
+                    if (h1.minutos < h2.minutos) {
                         return -1;
-                    } else if (r1->ord_cliente.horas_inicio.minutos > r2->ord_cliente.horas_inicio.minutos) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        }
-    }
-}
-
-int comparar_reservas(Reserva r1, Reserva r2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
-    if (r1->Data.ano < r2->Data.ano) {
-        return -1;
-    } else if (r1->Data.ano > r2->Data.ano) {
-        return 1;
-    } else {
-        if (r1->Data.mes < r2->Data.mes) {
-            return -1;
-        } else if (r1->Data.mes > r2->Data.mes) {
-            return 1;
-        } else {
-            if (r1->Data.dia < r2->Data.dia) {
-                return -1;
-            } else if (r1->Data.dia > r2->Data.dia) {
-                return 1;
-            } else {
-                if (r1->horas_inicio.horas < r2->horas_inicio.horas) {
-                    return -1;
-                } else if (r1->horas_inicio.horas > r2->horas_inicio.horas) {
-                    return 1;
-                } else {
-                    if (r1->horas_inicio.minutos < r2->horas_inicio.minutos) {
-                        return -1;
-                    } else if (r1->horas_inicio.minutos > r2->horas_inicio.minutos) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        }
-    }
-}
-
-int comparar_pre_reservas(Pre_reserva r1, struct reserva r2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
-    if (r1->pre_reservaa.Data.ano < r2.Data.ano) {
-        return -1;
-    } else if (r1->pre_reservaa.Data.ano > r2.Data.ano) {
-        return 1;
-    } else {
-        if (r1->pre_reservaa.Data.mes < r2.Data.mes) {
-            return -1;
-        } else if (r1->pre_reservaa.Data.mes > r2.Data.mes) {
-            return 1;
-        } else {
-            if (r1->pre_reservaa.Data.dia < r2.Data.dia) {
-                return -1;
-            } else if (r1->pre_reservaa.Data.dia > r2.Data.dia) {
-                return 1;
-            } else {
-                if (r1->pre_reservaa.horas_inicio.horas < r2.horas_inicio.horas) {
-                    return -1;
-                } else if (r1->pre_reservaa.horas_inicio.horas > r2.horas_inicio.horas) {
-                    return 1;
-                } else {
-                    if (r1->pre_reservaa.horas_inicio.minutos < r2.horas_inicio.minutos) {
-                        return -1;
-                    } else if (r1->pre_reservaa.horas_inicio.minutos > r2.horas_inicio.minutos) {
+                    } else if (h1.minutos > h2.minutos) {
                         return 1;
                     } else {
                         return 0;
@@ -409,7 +341,7 @@ bool horario_disponivel(Reserva cabeca, Reserva temporario){
     return false;
 }
 
-bool existe_hora_preenchida(Reserva cabeca, Reserva temporario) {
+bool existe_hora_preenchida(Reserva cabeca, Reserva temporario) { //VERIFICA SE O HORARIO É DISPONIVEL COM TODOS OS ELEMENTOS DA LISTA
     Reserva atual = cabeca;
     Reserva temp = temporario;
 
@@ -431,7 +363,7 @@ bool existe_hora_preenchida(Reserva cabeca, Reserva temporario) {
     return false;
 }
 
-bool bloco_de_hora_valido(int minutos){
+bool bloco_de_hora_valido(int minutos){ //verifica se os minutos da hora estão corretos, visto os serviços são feitos de meia em meia hora
     if(minutos == 0 || minutos == 30) {
         return false;
     }
@@ -534,12 +466,12 @@ struct reserva *criar_reserva(){ //CRIA A RESERVA
 //FUNÇÕES PARA ADICIONAR ELEMENTOS ÀS LISTAS
 //////////////////////////////////////////////////////////////////////////////////// 
 
-void adicionar_reserva_a_lista(Reserva cabeca, Reserva nova) { //ADICIONA À RESERVA
+void adicionar_reserva_a_lista(Reserva cabeca, Reserva nova) { //ADICIONA UM NÓ À LISTA DAS RESERVAS
     Reserva anterior = cabeca;
     Reserva atual = anterior->prox;
 
     // Percorre a lista enquanto a data e hora da reserva atual forem menores que a da nova reserva
-    while (atual != NULL && (comparar_reservas(atual,nova)==-1)){
+    while (atual != NULL && (comparar_reservas_cliente(atual->Data,nova->Data,atual->horas_inicio,nova->horas_inicio)==-1)){
         anterior = atual;
         atual = atual->prox;
     }
@@ -563,7 +495,7 @@ void adicionar_pre_reserva_a_lista(Pre_reserva cabeca_pre_reserva, Reserva nova)
     novo_no->prox = NULL;
 
     // Percorre a lista enquanto a data e hora da reserva atual forem menores que a da nova reserva
-    while (atual != NULL && comparar_pre_reservas(atual, novo_no->pre_reservaa) == -1) {
+    while (atual != NULL && comparar_reservas_cliente(atual->pre_reservaa.Data,novo_no->pre_reservaa.Data,atual->pre_reservaa.horas_inicio,novo_no->pre_reservaa.horas_inicio) == -1) {
         anterior = atual;
         atual = atual->prox;
     }
@@ -578,7 +510,7 @@ void adicionar_cliente_a_lista(L_cliente cabeca, L_cliente nova) { //ADICIONA À
     L_cliente atual = anterior->prox;
 
     // Percorre a lista enquanto a data e hora da reserva atual forem menores que a da nova reserva
-    while (atual != NULL && (comparar_reservas_cliente(atual,nova)==1)){ //adiciona à lista ficando sempre o mais recente à frente
+    while (atual != NULL && (comparar_reservas_cliente(atual->ord_cliente.Data,nova->ord_cliente.Data,atual->ord_cliente.horas_inicio,nova->ord_cliente.horas_inicio)==1)){ //adiciona à lista ficando sempre o mais recente à frente
         anterior = atual;
         atual = atual->prox;
     }
@@ -599,7 +531,7 @@ void remover_reserva(Reserva cabeca, Reserva telemovel_cliente) { //REMOVE CLIEN
     // Percorre a lista até encontrar o nó a ser eliminado
     while (atual != NULL) {
         if ((atual->Cliente.telemovel == telemovel_cliente->Cliente.telemovel) && ((strcmp(atual->Cliente.nome,telemovel_cliente->Cliente.nome))==0)
-        && ((comparar_reservas(atual,telemovel_cliente))==0)) {
+        && ((comparar_reservas_cliente(atual->Data,telemovel_cliente->Data,atual->horas_inicio,telemovel_cliente->horas_inicio))==0)) {
             break;
         }
         anterior = atual;
@@ -610,28 +542,6 @@ void remover_reserva(Reserva cabeca, Reserva telemovel_cliente) { //REMOVE CLIEN
     if (atual != NULL) {
         anterior->prox = atual->prox;
         //printf("Reserva eliminada.\n");
-        free(atual);
-    } else {
-        printf("Reserva não encontrada.\n");
-    }
-}
-
-void remover_reserva_nome_telemovel(Reserva cabeca, long telemovel_cliente, char nome[]) { //REMOVE CLIENTE DA RESERVA PELO Nº DE TELEMOVEL E NOME
-    Reserva atual = cabeca->prox; // salta o header
-    Reserva anterior = cabeca;
-
-    // Percorre a lista até encontrar o nó a ser eliminado
-    while (atual != NULL) {
-        if ((atual->Cliente.telemovel == telemovel_cliente) && (strcmp(atual->Cliente.nome,nome)==0)) {
-            break;
-        }
-        anterior = atual;
-        atual = atual->prox;
-    }
-
-    // Caso o nó a ser eliminado seja encontrado
-    if (atual != NULL) {
-        anterior->prox = atual->prox;
         free(atual);
     } else {
         printf("Reserva não encontrada.\n");
@@ -667,10 +577,6 @@ void remover_pre_reserva(Pre_reserva cabeca, long telemovel, char nome[], struct
 ///////////////////////////////////////////////////////////////////////////////////// 
 //CONVERSÕES
 /////////////////////////////////////////////////////////////////////////////////////
-
-void converter_reserva_para_pre_reserva(Reserva reserva, Pre_reserva pre_reserva) {//CONVERTE A INFORMAÇÃO DO TIPO "Reserva" PARA DO TIPO "Pre_reserva" (não estou a usar)
-    pre_reserva->pre_reservaa = *reserva;
-}
 
 Reserva converterPreReservaParaReserva(Pre_reserva pre_reserva) {
     Reserva reserva = NULL;
@@ -765,6 +671,150 @@ void adicionar_cliente_à_lista_temp(Reserva r, Pre_reserva p, L_cliente cabeca,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////// 
+//                                  FICHEIROS
+/////////////////////////////////////////////////////////////////////////////////////
+
+void lerReservasDeArquivo(Reserva r) {
+    FILE* arquivo = fopen("PROJETO/BaseDeDadosReserva.txt", "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.2\n");
+        exit(1);
+    }
+
+    // Vê se o ficheiro está vazio
+    if (fgetc(arquivo) == EOF) {
+        printf("O arquivo das reservas está vazio.\n");
+        fclose(arquivo);
+        return;
+    }
+
+    // Reset the file position to the beginning
+    rewind(arquivo);
+
+    Reserva cabeca = r; // Head of the reservation list
+    int leituras; // Variable to store the number of successful readings
+
+    while (!feof(arquivo)) {
+        Reserva novaReserva = (Reserva)malloc(sizeof(reserva));
+        if (novaReserva == NULL) {
+            printf("Erro ao alocar memória.\n");
+            break;
+        }
+
+        leituras = fscanf(arquivo, "%ld %s %d/%d/%d %d %d:%d %d:%d",
+                          &(novaReserva->Cliente.telemovel),
+                          novaReserva->Cliente.nome,
+                          &(novaReserva->Data.dia),
+                          &(novaReserva->Data.mes),
+                          &(novaReserva->Data.ano),
+                          &(novaReserva->tipo_reserva),
+                          &(novaReserva->horas_inicio.horas),
+                          &(novaReserva->horas_inicio.minutos),
+                          &(novaReserva->horas_fim.horas),
+                          &(novaReserva->horas_fim.minutos));
+
+        if (leituras != 10) {
+            printf("Erro ao ler informações do arquivo.\n");
+            free(novaReserva);
+            exit(1);
+        }
+
+        novaReserva->prox = NULL;
+
+        // If it's the first reservation, assign it as the head of the list
+        if (cabeca == NULL) {
+            cabeca = novaReserva;
+        } else {
+            // Add the new reservation to the list
+            adicionar_reserva_a_lista(cabeca, novaReserva);
+        }
+    }
+
+    fclose(arquivo);
+}
+
+void lerPreReservasDeArquivo(Pre_reserva p) {
+    FILE* arquivo = fopen("PROJETO/BaseDeDadosPreReserva.txt", "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.1\n");
+        exit(1);
+    }
+
+    // Vê se o ficheiro está vazio
+    if (fgetc(arquivo) == EOF) {
+        printf("O arquivo das pré-reservas está vazio.\n");
+        fclose(arquivo);
+        return;
+    }
+
+    // Reset the file position to the beginning
+    rewind(arquivo);
+
+    Pre_reserva cabeca = p; // Head of the reservation list
+    int leituras; // Variable to store the number of successful readings
+
+    while (!feof(arquivo)) {
+        Reserva novaReserva = (Reserva)malloc(sizeof(reserva));
+        if (novaReserva == NULL) {
+            printf("Erro ao alocar memória.\n");
+            break;
+        }
+
+        leituras = fscanf(arquivo, "%ld %s %d/%d/%d %d %d:%d %d:%d",
+                          &(novaReserva->Cliente.telemovel),
+                          novaReserva->Cliente.nome,
+                          &(novaReserva->Data.dia),
+                          &(novaReserva->Data.mes),
+                          &(novaReserva->Data.ano),
+                          &(novaReserva->tipo_reserva),
+                          &(novaReserva->horas_inicio.horas),
+                          &(novaReserva->horas_inicio.minutos),
+                          &(novaReserva->horas_fim.horas),
+                          &(novaReserva->horas_fim.minutos));
+
+        if (leituras != 10) {
+            printf("Erro ao ler informações do arquivo.\n");
+            free(novaReserva);
+            exit(1);
+        }
+
+        novaReserva->prox = NULL;
+
+        // If it's the first reservation, assign it as the head of the list
+        if (cabeca == NULL) {
+            cabeca->pre_reservaa = *novaReserva;
+        } else {
+            // Add the new reservation to the list
+            adicionar_pre_reserva_a_lista(cabeca, novaReserva);
+        }
+    }
+
+    fclose(arquivo);
+}
+
+void adicionarReservaAoArquivo(Reserva novaReserva) {
+    FILE* arquivo = fopen("PROJETO/BaseDeDadosReserva.txt", "a");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return;
+    }
+
+    fprintf(arquivo, "\n%ld %s %02d/%02d/%04d %d %02d:%02d %02d:%02d",
+            novaReserva->Cliente.telemovel,
+            novaReserva->Cliente.nome,
+            novaReserva->Data.dia,
+            novaReserva->Data.mes,
+            novaReserva->Data.ano,
+            novaReserva->tipo_reserva,
+            novaReserva->horas_inicio.horas,
+            novaReserva->horas_inicio.minutos,
+            novaReserva->horas_fim.horas,
+            novaReserva->horas_fim.minutos);
+
+    fclose(arquivo);
+}
+
+///////////////////////////////////////////////////////////////////////////////////// 
 //                              FUNÇÕES PARA O MAIN
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -772,14 +822,20 @@ void fazer_reserva_main(Reserva r, Pre_reserva p){
     Reserva temp=criar_reserva();
     adicionar_reserva_a_lista(r,temp);
         if (verificar_n_telemovel_igual(r,p,temp->Cliente.telemovel,temp->Cliente.nome) || dataValida(temp)) { //VERIFICAR SE JÁ EXISTE O CLIENTE NA RESERVA PELO Nº DE TELEMOVEL
+                                                                                                              //Verficiar se a data é válida
             remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
-        } else if (existe_hora_preenchida(r,temp)) { //VERIFICAR SE A HORA JÁ ESTÁ PREENCHIDA                        
+            
+        } else if (existe_hora_preenchida(r,temp)) { //VERIFICAR SE A HORA JÁ ESTÁ PREENCHIDA     
+
+            adicionar_pre_reserva_a_lista(p,temp); //ADICIONA À PRE_RESERVA               
+            remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
+
+            printf("Reserva adicionada às pré-reservas.\n"); 
             printf("Não foi possivel adicionar a reserva.\n"); 
-            adicionar_pre_reserva_a_lista(p,temp); //ADICIONA À PRE_RESERVA 
-            printf("Reserva adicionada às pré-reservas.\n");               
-            remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
             printf("\n");
+
         } else {
+            adicionarReservaAoArquivo(temp);
             printf("Reserva adicionada com sucesso.\n");
             printf("\n");
         }   
@@ -799,7 +855,6 @@ void remover_pre_reserva_main(Pre_reserva p){ //REMOVE PRE-RESERVA NO MAIN
     printf("TELEMOVEL: ");
     scanf("%ld",&telemovel);
 
-
     printf("TIPO DE RESERVA (0 = MANUTENÇÃO || 1 = LAVAGEM): ");
     scanf("%d",&tipo_reserva);
 
@@ -809,6 +864,7 @@ void remover_pre_reserva_main(Pre_reserva p){ //REMOVE PRE-RESERVA NO MAIN
     printf("DATA (DD/MM/AAAA): ");
     scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
 
+    //valta verificar se o cliente existe nas pre_reservas
     remover_pre_reserva(p,telemovel,nome,hora_inicio,Data_temp,tipo_reserva);
 }
 
@@ -819,7 +875,7 @@ void remover_reserva_main(Reserva cabeca, Pre_reserva p){
 
     while(principal!=NULL){ //VERIFICAR SE O CLIENTE EXISTE NA LISTA DAS RESERVAS
         if((principal->Cliente.telemovel==c->Cliente.telemovel) && (strcmp(principal->Cliente.nome,c->Cliente.nome))==0 && 
-            ((comparar_reservas(principal,c))==0)){
+            ((comparar_reservas_cliente(principal->Data,c->Data,principal->horas_inicio,c->horas_inicio))==0)){
             temp=principal; //GUARDA O CLIENTE QUE VAI SER ELIMINADO NA VARIAVEL "temp"
             break;
         }
@@ -854,7 +910,7 @@ void menu(Reserva r, Pre_reserva p, L_cliente l, int *opcao) {
            "\t\t\t3 : 'Cancelar pré-reserva'\n"
            "\t\t\t4 : 'Ver reservas'\n"
            "\t\t\t5 : 'Ver pre-reservas'\n"
-           "\t\t\t6 : 'Ver Cliente' (não está a funcionar)\n"
+           "\t\t\t6 : 'Ver Cliente'\n"
            "\t\t\t0 : 'Sair'\n"
            "Opcao: ");
 
@@ -891,6 +947,10 @@ int main(){
     Reserva r=criar_lista_reserva();
     Pre_reserva p=criar_lista_pre_reserva();
     L_cliente l=criar_lista_l_cliente();
+
+    lerReservasDeArquivo(r);            //Lê os ficheiros com os dados e guarda-os nas respectivas listas
+    lerPreReservasDeArquivo(p);
+
     //TESTAR COM TRES RESERVAS
     int opcao = -1;
     while (opcao != 0) {
@@ -899,5 +959,6 @@ int main(){
 
     free(r);
     free(p);
+
     return 0;
 }
