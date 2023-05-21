@@ -159,7 +159,7 @@ L_cliente criar_lista_l_cliente() { //CRIA LISTA DO CLIENTE (lista feita para im
 }
 
 //////////////////////////////////////////////////////////////////////////////////// 
-//FUNÇÕES PARA COMPARAR DATA
+//FUNÇÕES PARA COMPARAR DATA E HORAS
 ////////////////////////////////////////////////////////////////////////////////////
 
 int comparar_reservas_cliente(struct data d1,struct data d2, struct horas h1, struct horas h2) { //RETURN 1 SE A PRIMEIRA DATA FOR MAIS RECENTE RETURN -1 PARA O CONTRÁRIO
@@ -239,30 +239,29 @@ int compara_horas(struct horas h1, struct horas h2) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////// 
-//FUNÇÕES PARA VERIFICAR (VERIFICAR SE ENCONTRA DENTRO DO HORARIO DE TRABALHO)
+//FUNÇÕES DE VERIFICAÇÃO (VERIFICAR SE ENCONTRA DENTRO DO HORARIO DE TRABALHO)
 //////////////////////////////////////////////////////////////////////////////////// 
 
-bool dataValida(Reserva temporario) { //VERIFICA SE A DATA É VÁLIDA
-    Reserva temp=temporario;
-    if (temp->Data.mes < 1 || temp->Data.mes > 12){ //sai fora dos meses
+bool dataValida(struct data Data) { //VERIFICA SE A DATA É VÁLIDA
+    if (Data.mes < 1 || Data.mes > 12){ //sai fora dos meses
         printf("Data inválida.\n");
         return true;
     } 
-    if (temp->Data.mes == 2) { //mes de fevereiro
-        if ((temp->Data.ano % 4 == 0 && temp->Data.ano % 100 != 0) || temp->Data.ano % 400 == 0){
-            if (temp->Data.dia > 29){ // ano bissexto
+    if (Data.mes == 2) { //mes de fevereiro
+        if ((Data.ano % 4 == 0 && Data.ano % 100 != 0) || Data.ano % 400 == 0){
+            if (Data.dia > 29){ // ano bissexto
                 printf("Data inválida.\n");
                 return true;
-            } else if (temp->Data.dia > 28){
+            } else if (Data.dia > 28){
                 printf("Data inválida.\n");
                 return true;
             };
         }
-    } else if ((temp->Data.mes == 4 || temp->Data.mes == 6 || temp->Data.mes == 9 || temp->Data.mes == 11) && (temp->Data.dia > 30)){ //meses em vai ate 30 dias
+    } else if ((Data.mes == 4 || Data.mes == 6 || Data.mes == 9 || Data.mes == 11) && (Data.dia > 30)){ //meses em vai ate 30 dias
         printf("Data inválida.\n");
         return true;
     } else {
-        if(temp->Data.dia > 31){ //os outros meses
+        if(Data.dia > 31){ //os outros meses
             printf("Data inválida.\n");
             return true;
         } 
@@ -271,7 +270,8 @@ bool dataValida(Reserva temporario) { //VERIFICA SE A DATA É VÁLIDA
 }
 
 bool verificar_horario_fora_do_trabalho(struct horas *horas_fim, struct horas *horas_inicio){ //VERIFICA SE OS HORARIOS CORRESPONDENTES SE ENCONTRAM DENTRO DO HORARIO DE TRABALHO
-    if((horas_fim->horas>18) || (horas_fim->horas==18 && horas_fim->minutos>0) || (horas_inicio->horas<8)){ //08h00 - 18h00
+    if((horas_fim->horas>18) || (horas_fim->horas==18 && horas_fim->minutos>0) || (horas_inicio->horas<8) //08h00 - 18h00
+    || (horas_inicio->horas>18)){ 
         return true;
     }
     return false;
@@ -283,9 +283,8 @@ bool verificar_n_telemovel_igual(Reserva cabeca, Pre_reserva p, long telemovel,c
     while(atual!=NULL){
         if((atual_p->pre_reservaa.Cliente.telemovel!=telemovel) && (strcmp(atual_p->pre_reservaa.Cliente.nome,nome)!=0)){ //para não comparar consigo mesmo
             if((atual->Cliente.telemovel==telemovel) && (strcmp(atual->Cliente.nome,nome)!=0)) //VERIFICA SE O TELEMOVEL É IGUAL 
-            {                                                                                                              //E O NOME É DIFERENTE
+            {                                                                                  //E O NOME É DIFERENTE
                 printf("Número de telemóvel já existente (nas reservas).\n");
-                printf("\n");
                 return true;
             } 
         }
@@ -296,7 +295,6 @@ bool verificar_n_telemovel_igual(Reserva cabeca, Pre_reserva p, long telemovel,c
         if((atual_p->pre_reservaa.Cliente.telemovel!=telemovel) && (strcmp(atual_p->pre_reservaa.Cliente.nome,nome)!=0)){
             if((atual_p->pre_reservaa.Cliente.telemovel==telemovel) && (strcmp(atual_p->pre_reservaa.Cliente.nome,nome)!=0)){
                 printf("Número de telemóvel já existente (nas pré-reservas).\n");
-                printf("\n");
                 return true;
             }
         }
@@ -394,30 +392,10 @@ struct horas *definir_hora_fim(int tipo_reserva, struct horas horas_inicio){ //F
         hora_fim->minutos=horas_inicio.minutos;
     }
 
-    if(verificar_horario_fora_do_trabalho(hora_fim,&horas_inicio)){ //VERIFICA SE A HORA DO FIM NÃO SAI DO HORARIO DE TRABALHO 08h00 - 18h00
-        printf("Não é possivel adicionar hora (sai fora do horário de trabalho).\n");
-        printf("\n");
-        exit(1);
-    }
     return hora_fim;
 }
 
-struct cliente *criar_cliente(char *nome,int telemovel){ //CRIA O CLIENTE
-    struct cliente *c=malloc(sizeof(struct cliente));
-
-    if(c==NULL){
-        printf("ERRO A ALOCAR MEMORIA\n");
-    }
-
-    int id;
-
-    strcpy(c->nome,nome);
-    c->telemovel=telemovel;
-
-    return c;
-}
-
-struct reserva *criar_reserva(){ //CRIA A RESERVA
+struct reserva *criar_reserva(Reserva r, Pre_reserva p){ //CRIA A RESERVA
     struct reserva *c=malloc(sizeof(reserva));
     struct horas hora_inicio;
     struct horas hora_fim;
@@ -426,31 +404,57 @@ struct reserva *criar_reserva(){ //CRIA A RESERVA
     int tipo_reserva;
     long telemovel;
     
-    printf("NOME: ");
+    printf("NOME: "); //nome do cliente
     scanf("%s",nome);
 
-    printf("TELEMÓVEL: ");
+    printf("TELEMÓVEL: "); //nº telemovel
     scanf("%ld",&telemovel);
 
-    strcpy(c->Cliente.nome,criar_cliente(nome,telemovel)->nome);
-    c->Cliente.telemovel=criar_cliente(nome,telemovel)->telemovel;
+    while(verificar_n_telemovel_igual(r,p,telemovel,nome)){
+        printf("Digite um valor válido: ");
+        scanf("%ld",&telemovel);
+    }
 
-    printf("TIPO DE RESERVA (0 = MANUTENÇÃO || 1 = LAVAGEM): ");
+    strcpy(c->Cliente.nome,nome);
+    c->Cliente.telemovel=telemovel;
+
+    printf("TIPO DE RESERVA (0 = MANUTENÇÃO || 1 = LAVAGEM): "); //tipo de reserva
     scanf("%d",&tipo_reserva);
+
+    while(tipo_reserva!=0 && tipo_reserva!= 1){ //verifica se o valor é o correto
+        printf("Valor inválido!\n");
+        printf("Digite outro valor: ");
+        scanf("%d",&tipo_reserva);
+    }
 
     printf("HORAS (HH:MM): ");
     scanf("%d:%d",&(hora_inicio.horas),&(hora_inicio.minutos));
     
-    if (bloco_de_hora_valido(hora_inicio.minutos)) {
+    while(bloco_de_hora_valido(hora_inicio.minutos)) { //verificar se as horas estão em blocos de meia hora
         printf("Hora inválida.\n");
-        exit(1);
-    } 
+        printf("Digite um valor válido (horas devem estar em blocos de meia hora): ");
+        scanf("%d:%d",&(hora_inicio.horas),&(hora_inicio.minutos));
+    }
 
-    c->horas_fim.horas=definir_hora_fim(tipo_reserva,hora_inicio)->horas;
+    c->horas_fim.horas=definir_hora_fim(tipo_reserva,hora_inicio)->horas;   // define as horas_fim da tarefa
     c->horas_fim.minutos=definir_hora_fim(tipo_reserva,hora_inicio)->minutos;
+
+    while(verificar_horario_fora_do_trabalho(&(c->horas_fim),&hora_inicio)){ //verifica se não sai do horario de trabalho 08h00 - 18h00
+        printf("Não é possivel adicionar hora.\n");
+        printf("Digite um valor válido (horario de trabalho: 8h00 - 18h00): ");
+        scanf("%d:%d",&(hora_inicio.horas),&(hora_inicio.minutos));
+        c->horas_fim.horas=definir_hora_fim(tipo_reserva,hora_inicio)->horas;   
+        c->horas_fim.minutos=definir_hora_fim(tipo_reserva,hora_inicio)->minutos;
+    }
 
     printf("DATA (DD/MM/AAAA): ");
     scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
+
+    while(dataValida(Data_temp)){ //verifica se a data é valida
+        printf("Não é possivel adicionar data.\n");
+        printf("Digite um valor válido: ");
+        scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
+    }
 
     c->Data.dia=Data_temp.dia;
     c->Data.mes=Data_temp.mes;
@@ -541,7 +545,7 @@ void remover_reserva(Reserva cabeca, Reserva telemovel_cliente) { //REMOVE CLIEN
     // Caso o nó a ser eliminado seja encontrado
     if (atual != NULL) {
         anterior->prox = atual->prox;
-        //printf("Reserva eliminada.\n");
+        printf("Reserva eliminada com sucesso.\n");
         free(atual);
     } else {
         printf("Reserva não encontrada.\n");
@@ -568,7 +572,7 @@ void remover_pre_reserva(Pre_reserva cabeca, long telemovel, char nome[], struct
     if (atual != NULL) {
         anterior->prox = atual->prox;
         free(atual);
-        printf("Cliente eliminado com sucesso.\n");
+        printf("Pré-reserva eliminada com sucesso.\n");
     } else {
         printf("Reserva não encontrada.\n");
     }
@@ -646,12 +650,12 @@ L_cliente criar_cliente_pre_reserva(Pre_reserva r) { //Trocar os dados do tipo "
 void adicionar_cliente_à_lista_temp(Reserva r, Pre_reserva p, L_cliente cabeca, long telemovel, char nome[]){ //adiciona à lista dependo se é da reserva ou pré_reserva
     Reserva r_principal=r->prox;
     Pre_reserva p_principal=p->prox;
-
+/*
     if(!verificar_n_telemovel_igual(r,p,telemovel,nome)){
         printf("Cliente não encontrado.\n");
         return;
     }
-
+*/
     while (r_principal!=NULL){ //Percorre a lista das reservas  
         L_cliente temp;
         if(((strcmp(r_principal->Cliente.nome,nome))==0) && (r_principal->Cliente.telemovel==telemovel)){ //Verifica todas as reservas que sejam do cliente
@@ -677,7 +681,7 @@ void adicionar_cliente_à_lista_temp(Reserva r, Pre_reserva p, L_cliente cabeca,
 void lerReservasDeArquivo(Reserva r) {
     FILE* arquivo = fopen("PROJETO/BaseDeDadosReserva.txt", "r");
     if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo.2\n");
+        printf("Erro ao abrir o arquivo das reservas.\n");
         exit(1);
     }
 
@@ -714,7 +718,7 @@ void lerReservasDeArquivo(Reserva r) {
                           &(novaReserva->horas_fim.minutos));
 
         if (leituras != 10) {
-            printf("Erro ao ler informações do arquivo.\n");
+            printf("Erro ao ler informações do arquivo (reservas).\n");
             free(novaReserva);
             exit(1);
         }
@@ -773,7 +777,7 @@ void lerPreReservasDeArquivo(Pre_reserva p) {
                           &(novaReserva->horas_fim.minutos));
 
         if (leituras != 10) {
-            printf("Erro ao ler informações do arquivo.\n");
+            printf("Erro ao ler informações do arquivo (pré-reserva).\n");
             free(novaReserva);
             exit(1);
         }
@@ -792,24 +796,72 @@ void lerPreReservasDeArquivo(Pre_reserva p) {
     fclose(arquivo);
 }
 
-void adicionarReservaAoArquivo(Reserva novaReserva) {
-    FILE* arquivo = fopen("PROJETO/BaseDeDadosReserva.txt", "a");
+void reescreverReservasNoArquivo(Reserva listaReservas) {
+    FILE* arquivo = fopen("PROJETO/BaseDeDadosReserva.txt", "w");
     if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return;
     }
 
-    fprintf(arquivo, "\n%ld %s %02d/%02d/%04d %d %02d:%02d %02d:%02d",
-            novaReserva->Cliente.telemovel,
-            novaReserva->Cliente.nome,
-            novaReserva->Data.dia,
-            novaReserva->Data.mes,
-            novaReserva->Data.ano,
-            novaReserva->tipo_reserva,
-            novaReserva->horas_inicio.horas,
-            novaReserva->horas_inicio.minutos,
-            novaReserva->horas_fim.horas,
-            novaReserva->horas_fim.minutos);
+    Reserva reservaAtual = listaReservas->prox;
+    int isLastReservation = 0;
+
+    while (reservaAtual != NULL) {
+        if (reservaAtual->prox == NULL) {
+            isLastReservation = 1;
+        }
+
+        fprintf(arquivo, "%ld %s %02d/%02d/%04d %d %02d:%02d %02d:%02d%s",
+            reservaAtual->Cliente.telemovel,
+            reservaAtual->Cliente.nome,
+            reservaAtual->Data.dia,
+            reservaAtual->Data.mes,
+            reservaAtual->Data.ano,
+            reservaAtual->tipo_reserva,
+            reservaAtual->horas_inicio.horas,
+            reservaAtual->horas_inicio.minutos,
+            reservaAtual->horas_fim.horas,
+            reservaAtual->horas_fim.minutos,
+            isLastReservation ? "" : "\n");
+
+        isLastReservation = 0;
+        reservaAtual = reservaAtual->prox;
+    }
+
+    fclose(arquivo);
+}
+
+void reescreverPreReservasNoArquivo(Pre_reserva listaPreReservas) {
+    FILE* arquivo = fopen("PROJETO/BaseDeDadosPreReserva.txt", "w");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return;
+    }
+
+    Pre_reserva preReservaAtual = listaPreReservas->prox;
+    int isLastPreReserva = 0;
+
+    while (preReservaAtual != NULL) {
+        if (preReservaAtual->prox == NULL) {
+            isLastPreReserva = 1;
+        }
+
+        fprintf(arquivo, "%ld %s %02d/%02d/%04d %d %02d:%02d %02d:%02d%s",
+            preReservaAtual->pre_reservaa.Cliente.telemovel,
+            preReservaAtual->pre_reservaa.Cliente.nome,
+            preReservaAtual->pre_reservaa.Data.dia,
+            preReservaAtual->pre_reservaa.Data.mes,
+            preReservaAtual->pre_reservaa.Data.ano,
+            preReservaAtual->pre_reservaa.tipo_reserva,
+            preReservaAtual->pre_reservaa.horas_inicio.horas,
+            preReservaAtual->pre_reservaa.horas_inicio.minutos,
+            preReservaAtual->pre_reservaa.horas_fim.horas,
+            preReservaAtual->pre_reservaa.horas_fim.minutos,
+            isLastPreReserva ? "" : "\n");
+
+        isLastPreReserva = 0;
+        preReservaAtual = preReservaAtual->prox;
+    }
 
     fclose(arquivo);
 }
@@ -818,10 +870,40 @@ void adicionarReservaAoArquivo(Reserva novaReserva) {
 //                              FUNÇÕES PARA O MAIN
 /////////////////////////////////////////////////////////////////////////////////////
 
+void acabar_o_dia_main(Reserva r, Pre_reserva p){ //função para retirar as reservas e pre reservas dum determinado dia
+    Reserva r_principal=r->prox;
+    Pre_reserva p_principal=p->prox;
+
+    struct data Data_temp;
+    printf("Insira o dia a remover: ");
+    scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
+    while(dataValida(Data_temp)){ //verifica se a data é valida
+        printf("Não é possivel adicionar data.\n");
+        printf("Digite um valor válido: ");
+        scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
+    }
+
+
+    while (r_principal!=NULL){
+        Reserva temp = r_principal;
+        if(compara_datas(r_principal->Data,Data_temp)==0){
+            remover_reserva(r,temp);
+        }
+        r_principal=r_principal->prox;
+    }
+    while (p_principal!=NULL){
+        Pre_reserva temporario = p_principal;
+        if(compara_datas(p_principal->pre_reservaa.Data,Data_temp)==0){
+            remover_pre_reserva(p,temporario->pre_reservaa.Cliente.telemovel,temporario->pre_reservaa.Cliente.nome,temporario->pre_reservaa.horas_inicio,temporario->pre_reservaa.Data,temporario->pre_reservaa.tipo_reserva);
+        }
+        p_principal=p_principal->prox;
+    }
+}
+
 void fazer_reserva_main(Reserva r, Pre_reserva p){
-    Reserva temp=criar_reserva();
+    Reserva temp=criar_reserva(r,p);
     adicionar_reserva_a_lista(r,temp);
-        if (verificar_n_telemovel_igual(r,p,temp->Cliente.telemovel,temp->Cliente.nome) || dataValida(temp)) { //VERIFICAR SE JÁ EXISTE O CLIENTE NA RESERVA PELO Nº DE TELEMOVEL
+        if (verificar_n_telemovel_igual(r,p,temp->Cliente.telemovel,temp->Cliente.nome)) { //VERIFICAR SE JÁ EXISTE O CLIENTE NA RESERVA PELO Nº DE TELEMOVEL
                                                                                                               //Verficiar se a data é válida
             remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
             
@@ -835,7 +917,6 @@ void fazer_reserva_main(Reserva r, Pre_reserva p){
             printf("\n");
 
         } else {
-            adicionarReservaAoArquivo(temp);
             printf("Reserva adicionada com sucesso.\n");
             printf("\n");
         }   
@@ -870,7 +951,7 @@ void remover_pre_reserva_main(Pre_reserva p){ //REMOVE PRE-RESERVA NO MAIN
 
 void remover_reserva_main(Reserva cabeca, Pre_reserva p){
     Reserva principal=cabeca->prox;
-    Reserva c=criar_reserva();
+    Reserva c=criar_reserva(cabeca,p);
     Reserva temp=NULL;
 
     while(principal!=NULL){ //VERIFICAR SE O CLIENTE EXISTE NA LISTA DAS RESERVAS
@@ -887,6 +968,7 @@ void remover_reserva_main(Reserva cabeca, Pre_reserva p){
     } else {
         PreReserva_para_Reserva(cabeca,p,temp);
         remover_reserva(cabeca,c);
+        printf("Reserva removida com sucesso.\n");
     }
 }
 
@@ -911,32 +993,44 @@ void menu(Reserva r, Pre_reserva p, L_cliente l, int *opcao) {
            "\t\t\t4 : 'Ver reservas'\n"
            "\t\t\t5 : 'Ver pre-reservas'\n"
            "\t\t\t6 : 'Ver Cliente'\n"
+           "\t\t\t7 : 'Acabar o dia'\n"
+           "\t\t\t8 : 'Guardas dados no ficheiro'\n"
            "\t\t\t0 : 'Sair'\n"
+
            "Opcao: ");
 
     scanf("%d", opcao);
-    if(*opcao < 0 || *opcao > 6){
+    while(*opcao < 0 || *opcao > 8){
         printf("Opção inválida\n");
-    } else {
-        if (*opcao == 1) {
-            fazer_reserva_main(r, p);
-        }
-        if (*opcao == 2) {
-            remover_reserva_main(r, p);
-        }
-        if (*opcao == 3) {
-            remover_pre_reserva_main(p);
-        }
-        if (*opcao == 4) {
-            imprimir_reservas(r);
-        }
-        if (*opcao == 5) {
-            imprimir_pre_reservas(p);
-        }
-        if (*opcao == 6) {
-            imprimir_cliente_main(r,p,l);
-        }
+        printf("Digite uma opção válida: ");
+        scanf("%d", opcao);
     }
+    if (*opcao == 1) {
+        fazer_reserva_main(r, p);
+    }
+    if (*opcao == 2) {
+        remover_reserva_main(r, p);
+    }
+    if (*opcao == 3) {
+        remover_pre_reserva_main(p);
+    }
+    if (*opcao == 4) {
+        imprimir_reservas(r);
+    }
+    if (*opcao == 5) {
+        imprimir_pre_reservas(p);
+    }
+    if (*opcao == 6) {
+        imprimir_cliente_main(r,p,l);
+    }
+    if (*opcao == 7) {
+        acabar_o_dia_main(r,p);
+    }
+    if (*opcao == 8) {
+        reescreverReservasNoArquivo(r);     //Reescreve os dados das reservas e pre reservas nos ficheiros
+        reescreverPreReservasNoArquivo(p);
+    }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////// 
@@ -951,12 +1045,13 @@ int main(){
     lerReservasDeArquivo(r);            //Lê os ficheiros com os dados e guarda-os nas respectivas listas
     lerPreReservasDeArquivo(p);
 
-    //TESTAR COM TRES RESERVAS
     int opcao = -1;
     while (opcao != 0) {
         menu(r,p,l,&opcao);
     }
 
+    reescreverReservasNoArquivo(r);     //Reescreve os dados das reservas e pre reservas nos ficheiros
+    reescreverPreReservasNoArquivo(p);
     free(r);
     free(p);
 
