@@ -211,7 +211,7 @@ int compara_datas(struct data d1,struct data d2) {
         else{
             if(d1.dia<d2.dia)
                 return -1;
-            if(d1.dia<d2.dia)
+            if(d1.dia>d2.dia)
                 return 1;
             else
                 return 0;
@@ -368,6 +368,15 @@ bool bloco_de_hora_valido(int minutos){ //verifica se os minutos da hora estão 
     return true;
 }
 
+bool verificar_se_n_telemovel_tem_caracter(char telemovel[]){ // verifica se o numero de telemovel tem caracter
+    for(int i=0;i<strlen(telemovel);i++){
+        if(!isdigit(telemovel[i])){
+            return true;
+        }
+    }
+    return false;
+}
+
 //////////////////////////////////////////////////////////////////////////////////// 
 //CRIAR OS CLIENTES
 //////////////////////////////////////////////////////////////////////////////////// 
@@ -401,22 +410,28 @@ struct reserva *criar_reserva(Reserva r, Pre_reserva p){ //CRIA A RESERVA
     struct horas hora_fim;
     struct data Data_temp;
     char nome[100];
-    int tipo_reserva;
+    char n_telemovel[100];
+    int tipo_reserva,result,i;
     long telemovel;
     
-    printf("NOME: "); //nome do cliente
+    printf("NOME (Digite sem espaços): "); //nome do cliente
     scanf("%s",nome);
-
+    
     printf("TELEMÓVEL: "); //nº telemovel
-    scanf("%ld",&telemovel);
+    scanf("%s",n_telemovel);
+
+    while(verificar_se_n_telemovel_tem_caracter(n_telemovel)){
+        printf("Numero de telemóvel contem caracter inválido.\n");
+        printf("Digite novamente: ");
+        scanf("%s",n_telemovel);
+    }
+
+    telemovel=atol(n_telemovel);
 
     while(verificar_n_telemovel_igual(r,p,telemovel,nome)){
         printf("Digite um valor válido: ");
         scanf("%ld",&telemovel);
     }
-
-    strcpy(c->Cliente.nome,nome);
-    c->Cliente.telemovel=telemovel;
 
     printf("TIPO DE RESERVA (0 = MANUTENÇÃO || 1 = LAVAGEM): "); //tipo de reserva
     scanf("%d",&tipo_reserva);
@@ -451,11 +466,12 @@ struct reserva *criar_reserva(Reserva r, Pre_reserva p){ //CRIA A RESERVA
     scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
 
     while(dataValida(Data_temp)){ //verifica se a data é valida
-        printf("Não é possivel adicionar data.\n");
         printf("Digite um valor válido: ");
         scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
     }
 
+    strcpy(c->Cliente.nome,nome);
+    c->Cliente.telemovel=telemovel;
     c->Data.dia=Data_temp.dia;
     c->Data.mes=Data_temp.mes;
     c->Data.ano=Data_temp.ano;
@@ -883,17 +899,16 @@ void acabar_o_dia_main(Reserva r, Pre_reserva p){ //função para retirar as res
         scanf("%d/%d/%d",&Data_temp.dia,&Data_temp.mes,&Data_temp.ano);
     }
 
-
     while (r_principal!=NULL){
         Reserva temp = r_principal;
-        if(compara_datas(r_principal->Data,Data_temp)==0){
+        if(compara_datas(r_principal->Data,Data_temp)<=0){
             remover_reserva(r,temp);
         }
         r_principal=r_principal->prox;
     }
     while (p_principal!=NULL){
         Pre_reserva temporario = p_principal;
-        if(compara_datas(p_principal->pre_reservaa.Data,Data_temp)==0){
+        if(compara_datas(p_principal->pre_reservaa.Data,Data_temp)<=0){
             remover_pre_reserva(p,temporario->pre_reservaa.Cliente.telemovel,temporario->pre_reservaa.Cliente.nome,temporario->pre_reservaa.horas_inicio,temporario->pre_reservaa.Data,temporario->pre_reservaa.tipo_reserva);
         }
         p_principal=p_principal->prox;
@@ -907,7 +922,7 @@ void fazer_reserva_main(Reserva r, Pre_reserva p){
                                                                                                               //Verficiar se a data é válida
             remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
             
-        } else if (existe_hora_preenchida(r,temp)) { //VERIFICAR SE A HORA JÁ ESTÁ PREENCHIDA     
+        } else if (existe_hora_preenchida(r,temp)) { //VERIFICAR SE A HORA JÁ ESTÁ PREENCHIDA   
 
             adicionar_pre_reserva_a_lista(p,temp); //ADICIONA À PRE_RESERVA               
             remover_reserva(r,temp); //ELIMINA DA LISTA DAS RESERVAS
@@ -994,7 +1009,7 @@ void menu(Reserva r, Pre_reserva p, L_cliente l, int *opcao) {
            "\t\t\t5 : 'Ver pre-reservas'\n"
            "\t\t\t6 : 'Ver Cliente'\n"
            "\t\t\t7 : 'Acabar o dia'\n"
-           "\t\t\t8 : 'Guardas dados no ficheiro'\n"
+           "\t\t\t8 : 'Guardar dados no ficheiro'\n"
            "\t\t\t0 : 'Sair'\n"
 
            "Opcao: ");
@@ -1029,6 +1044,7 @@ void menu(Reserva r, Pre_reserva p, L_cliente l, int *opcao) {
     if (*opcao == 8) {
         reescreverReservasNoArquivo(r);     //Reescreve os dados das reservas e pre reservas nos ficheiros
         reescreverPreReservasNoArquivo(p);
+        printf("Dados guardados com sucesso.\n");
     }
 
 }
